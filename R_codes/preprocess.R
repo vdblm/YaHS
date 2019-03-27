@@ -180,7 +180,7 @@ data <- data[, colMeans(is.na(data)) < .4]
 
 
 ## 9- Preprocess using data_preproc
-proc_data <- data_preproc(data, level = 5, detect.outliers = F, alpha = .2)
+proc_data <- data_preproc(data, level = 5, detect.outliers = F, alpha = .2, sampling = TRUE)
 
 ## 10- Change names
 new_names <- c('Weight', 'Height', 'BMI', 'MetaP', 'Fat', 'BloodPreS', 'BloodPreD', 'Pulse', 'FatPerc', 'MusclePerc', 'WaistCircum', 'HipCircum', 'NeckCircum')

@@ -10,6 +10,7 @@
 #' @param  levels An integer number indicates the maximum levels of categorical variables. It is used when \code{is.cat} in NULL. (default = 5)
 #' @param  detect.outliers Logical indicating if data outliers should be detected. If TRUE outliers will be treated as NA. Defaults to FALSE.
 #' @param  alpha A number between (0, 1). Rows where the ratio of the NA values in them is more than alpha will be deleted.
+#' @param  sampling Use sampling instead of Mean or Mode for imputation.
 #' @param  ... Any additional arguments.
 #'
 #' @author  Elyas Heidari, Vahid Balazadeh
@@ -44,6 +45,7 @@ data_preproc <- function(data,
                          levels = 5,
                          detect.outliers = FALSE,
                          alpha = 0.5,
+                         sampling = TRUE,
                          ...) {
   args <- list(...)
   beta = args$beta
@@ -54,7 +56,7 @@ data_preproc <- function(data,
     column_anom_detect <- function(x) {
       index <- c(1:length(x))
       col_df <- data.frame(index, x)
-
+      
       na_row <- apply(col_df, 1, function(x)
         is.na(x[2]))
       na_df <- col_df[na_row,]
@@ -68,32 +70,32 @@ data_preproc <- function(data,
         alpha = beta
       )
       col_df[anm$anoms$index, 2] <- NA
-
+      
       col_df <- rbind(col_df, na_df)
-
+      
       return(col_df[order(col_df[, 1]), 2])
     }
-
+    
     return(data.frame(sapply(df, column_anom_detect)))
-
+    
   }
-
+  
   is.cat.function <- function(var) {
     return(!length(unique(var[!is.na(var)])) > levels)
   }
-
+  
   cont.cat.spec <- function(x, is.cat) {
     x <- data.frame(x)
     ls <- c(1:ncol(x))
     t <- sapply(ls, function(i)
       (!(is.numeric(x[, i]) | is.cat[i])))
-
+    
     if (sum(t) != 0) {
       ls <- ls[t]
       x <- x[-ls]
       is.cat <- is.cat[-ls]
     }
-
+    
     x[, is.cat] <- data.frame(sapply(x[, is.cat], as.factor))
     x <- data.frame(x)
     x <- sapply(x, as.numeric)
@@ -105,56 +107,83 @@ data_preproc <- function(data,
         binding <- data.frame(as.factor(t[, which(is.cat == T)]))
         colnames(binding) <- colnames(x)[which(is.cat == T)]
       }
-
+      
       x <- data.frame(x)
       binding <- data.frame(binding)
       x <- cbind(x[,!is.cat] , binding)
     }
     x
   }
-
+  
   Mode <- function(x) {
     ux <- unique(x)
     ux <- ux[which(!is.na(ux))]
     ux[which.max(tabulate(match(x, ux)))]
   }
-
+  
   impute.factor <- function(x) {
     x <- as.factor(as.character(x))
     x[is.na(x)] = Mode(x)
     x
   }
-
+  
   impute.continuous <- function(x) {
     x <- as.numeric(x)
     x[is.na(x)] = mean(x, na.rm = T)
     x
   }
-
-
+  
+  # imputation using sampling
+  impute.continuous.sample <- function(x) {
+    x <- as.numeric(x)
+    x[is.na(x)] = sample(x[!is.na(x)], size = sum(is.na(x)), replace = T)
+    x
+  }
+  
+  # imputation using sampling
+  impute.factor.sample <- function(x) {
+    x <- as.factor(as.character(x))
+    x[is.na(x)] = sample(x[!is.na(x)], size = sum(is.na(x)), replace = T)
+    x
+  }
+  
+  
   data <- data.frame(data)
-
+  
   # Specify categorical and continuous variables
   if (is.null(is.cat))
     data <- cont.cat.spec(data, sapply(data, is.cat.function))
   else
     data <- cont.cat.spec(data, is.cat)
-
+  
   # Set outlier to NA
   if (detect.outliers) {
-    cont_vars <- sapply(data, function(x)! is.factor(x))
+    cont_vars <- sapply(data, function(x)
+      ! is.factor(x))
     data[, cont_vars] <- df_anomaly_detector(data[, cont_vars])
   }
-
+  
   # Delete rows with more NA ratio more than alpha
   data <-
     data[apply(data, 1, function(x)
       (sum(is.na(x)) / length(x)) <= alpha), ]
-
+  
   # Impute the dataset
-  data.frame(lapply(data, function(x)
-    if (is.numeric(x) == T)
-      impute.continuous(x)
-    else if (is.factor(x) == T)
-      impute.factor(x)))
+  if (sampling) {
+    return(data.frame(
+      lapply(data, function(x)
+        if (is.numeric(x) == T)
+          impute.continuous.sample(x)
+        else if (is.factor(x) == T)
+          impute.factor.sample(x))
+    ))
+  } else {
+    return(data.frame(
+      lapply(data, function(x)
+        if (is.numeric(x) == T)
+          impute.continuous(x)
+        else if (is.factor(x) == T)
+          impute.factor(x))
+    ))
+  }
 }
