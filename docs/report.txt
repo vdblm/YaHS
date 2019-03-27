@@ -10,3 +10,5 @@ data preprocess (in order):
 9- data is preprocessed using the method in muvis (data_preproc.R) - imputation by Mode and Mean (sampling in another option)
 10- name of the first 13 vars changed and 'LDH' changed to 'HDL'
 11- 'LDL' variable added using the formula: proc_data$LDL <- proc_data$Chol - proc_data$HDL - (proc_data$TG/5)
+
+
