@@ -1,3 +1,14 @@
-1- impute the dataset using sampling, Done!
-2- generate ggm with community detection but not size of the nodes
-3- ggm for male and female and statistical test
+data preprocess (in order):
+1- '*' char in some cells is removed
+2- shifts in the data ('WBC', 'MPV', 'CBC') are corrected
+3- those samples with diastolic bp more than systolic bp are corrected (dbp and sbp are reversed)
+4- zeros in "test" variables are replaced with NA
+5- values in contrast to # of options in "test" variables are replaced with NA (e.g. "3" for a test with 2 options)
+6- values not in the defined range for each variable replaced with NA (see cutoff.txt)
+7- samples with more than 20 NA values in cont var (among 40 cont vars) are removed
+8- variables with 'NA' more than 40% are removed
+9- data is preprocessed using the method in muvis (data_preproc.R) - imputation by Mode and Mean (sampling in another option)
+10- name of the first 13 vars changed and 'LDH' changed to 'HDL'
+11- 'LDL' variable added using the formula: proc_data$LDL <- proc_data$Chol - proc_data$HDL - (proc_data$TG/5)
+
+
