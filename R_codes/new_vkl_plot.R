@@ -5,9 +5,9 @@ new_vkl_plot <- function(kl, names) {
                  "#5DC863FF")
   indices <- which(names %in% cont_names)
   t <- sapply(names[indices], function(x) names(cont_names[which(cont_names == x)]))
-  names <- replace(names, indices, t)
+  names <- unlist(replace(names, indices, t))
   df <- data.frame(kl, names)
-    g2 <- ggdotchart(df, y = "kl", x = "names",
+    g2 <- ggdotchart(df, y = "KL", x = "names",
                      add = "segments",
                      add.params = list(color = color_set[4], size = 1.5),
                      dot.size = 2,   shape = 15, color = color_set[2],
