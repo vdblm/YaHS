@@ -11,4 +11,13 @@ data preprocess (in order):
 10- name of the first 13 vars changed and 'LDH' changed to 'HDL'
 11- 'LDL' variable added using the formula: proc_data$LDL <- proc_data$Chol - proc_data$HDL - (proc_data$TG/5)
 
+##########################################################
+1- sampling instead of mode and mean in preprocess, Done!
+2- genereate ggm result and minimal forest, Done!
+3- filter ggm based on gender and other vars (cutoffs) and statistical test
+4- run vvkl on cholesterol and hdl, Done!
+5- larger pics for lasso with categorical vars
+6- code of all pics in the paper (VKL, lasso and population codes)
+7- generate all the pics again. delete mi table and causal graphs and pairwise figs
+
 
