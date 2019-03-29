@@ -20,4 +20,6 @@ data preprocess (in order):
 6- code of all pics in the paper (VKL, lasso and population codes)
 7- generate all the pics again. delete mi table and causal graphs and pairwise figs
 
+* are values in vkl scaled?
+
 
