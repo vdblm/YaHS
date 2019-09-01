@@ -219,6 +219,12 @@ levels(proc_data$test2) <- c('male', 'female')
 levels(proc_data$test62) <- c('positive', 'negative')
 levels(proc_data$test1) <- c('20-29', '30-39', '40-49', '50-59', '60-69')
 
+# Deleting redundant tests
+deleted_tests <- c(9, 10, 11, 190:196)
+sapply(deleted_tests, function(x) proc_data[, paste('test', x, sep = "")] <- NULL)
+
+# Change names to Q
+colnames(proc_data)[35:length(colnames(proc_data))] <- sapply(colnames(proc_data)[35:length(colnames(proc_data))], function(x) gsub('test', 'Q', x))
 real_cont_names <- c('weight', 'height', 'body mass index (BMI)', 'metap', 'fat', 'systolic blood pressure', 'diastolic blood pressure', 'pulse', 'fat percentage', 'muscle percentage', 'waist circumference', 'hip circumference', 'neck circumference', 'fast serum glucose (FSG)', 'urinary albumin concentration (UAC)', 'cholesterol', 'triglyceride', 'creatinine', 'high-density lipoprotein (HDL)', 'white blood cell count (WBC)', 'red blood cell count (RBC)', 'hemoglobin', 'hematocrit', 'mean corpuscular volume (MCV)', 'mean cell hemoglobin (MCH)', 'mean corpuscular hemoglobin concentration (MCHC)', 'platelet', 'lymph', 'mixed cell count (MXD)', 'neutrophils', 'red blood cell distribution width (RDW)', 'platelet distribution width (PDW)', 'mean platelet volume (MPV)', 'low-density lipoproteins (LDL)')
 
 cont_names <- colnames(proc_data[, 1:34])
