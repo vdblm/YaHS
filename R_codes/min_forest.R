@@ -59,30 +59,36 @@ min_forest <-
            community = TRUE,
            betweenness = TRUE,
            plot = FALSE,
+           tree = FALSE,
+           p.val = FALSE,
            levels = NULL) {
-    
     if (!is.null(levels))
       data <- data_preproc(data, levels = levels)
-    my.forest <- gRapHD::minForest(data, homog = F, stat = stat)
-    nby <-
-      gRapHD::neighbourhood(my.forest, orig = 1, rad = 2000)$v[, 1]
-    bc.marg <- data[, nby]
-    mbF <- gRapHD::minForest(bc.marg)
-    mbG <- gRapHD::stepw(model = mbF,
-                         data = bc.marg,
-                         stat = stat)
-    rpl <- function(x) {
-      colnames(data[, nby])[x]
+    
+    my.forest <- gRapHD::minForest(data, stat = stat)
+    
+    connected_comp <-
+      gRapHD::neighbourhood(my.forest, orig = 1, rad = (dim(data)[2] + 1))$v[, 1]
+    
+    mbG <- gRapHD::minForest(data[, connected_comp], stat = stat)
+    if (!tree) {
+      mbG <- gRapHD::stepw(model = mbG,
+                           data = data[, connected_comp],
+                           stat = stat)
     }
-    l <- apply(mbG@edges, 2, rpl)
-    colnames(l) <- c("from", "to")
-    l <- data.frame(l)
-    nodes <- unique(c(as.character(l$from), as.character(l$to)))
+    edges <-
+      apply(mbG@edges, 2, function(x)
+        colnames(data[, connected_comp])[x])
+    
+    colnames(edges) <- c("from", "to")
+    edges <- data.frame(edges)
+    nodes <-
+      unique(c(as.character(edges$from), as.character(edges$to)))
     nodes <- data.frame(id = nodes, label = nodes)
-    edges <- l
+    
     e <- c()
     for (i in 1:dim(edges)[1]) {
-      e <- c(e, edges[i, ])
+      e <- c(e, edges[i,])
     }
     e <- unlist(e)
     e <- as.character(e)
@@ -97,44 +103,41 @@ min_forest <-
         plot = plot,
         directed = F
       )
-    
-    vnet <- val$network
-    edges <-  vnet$x$edges
-    
-    test_matrix <- test_assoc(data, vnet$x$nodes$id, levels = levels)
-    e_names <- rbind(edges$from, edges$to)
-    p_values <- apply(e_names, 2, function(x) test_matrix[x[1], x[2]])
-    title = paste0("<p>", paste("P.value =", p_values), "</p>")
-    edges[, "statistics"] <- statistics
-    edges[, "title"] <- title
-    edges[, "weight"] <- p_values
-    
-    significance <- data.frame(edges$from, edges$to)
-    significance$statistics <- statistics
-    significance$p.value <- p_values
-    
-    vn <- visNetwork::visNetwork(vnet$x$nodes, edges, height = "500px", width = "100%")  %>%
-      visNetwork::visOptions(highlightNearest = list(
-        enabled = T,
-        degree = 1,
-        hover = T
-      ))
-    if (community) {
-      list(
-        significance = significance,
-        summary = mbG,
-        graph = val$graph,
-        betweenness = val$betweenness,
-        network = vn,
-        communities = val$communities
-      )
-    } else {
-      list(
-        significance = significance,
-        summary = mbG,
-        graph = val$graph,
-        betweenness = val$betweenness,
-        network = vn
-      )
+    vn = val$network
+    significance = NULL
+    if (p.val == T) {
+      vnet <- val$network
+      edges <-  vnet$x$edges
+      
+      test_matrix <-
+        test_assoc(data, vnet$x$nodes$id, levels = levels)
+      e_names <- rbind(edges$from, edges$to)
+      p_values <-
+        apply(e_names, 2, function(x)
+          test_matrix[x[1], x[2]])
+      title = paste0("<p>", paste("P.value =", p_values), "</p>")
+      edges[, "statistics"] <- statistics
+      edges[, "title"] <- title
+      edges[, "weight"] <- p_values
+      
+      significance <- data.frame(edges$from, edges$to)
+      significance$statistics <- statistics
+      significance$p.value <- p_values
+      
+      vn <-
+        visNetwork::visNetwork(vnet$x$nodes, edges, height = "500px", width = "100%")  %>%
+        visNetwork::visOptions(highlightNearest = list(
+          enabled = T,
+          degree = 1,
+          hover = T
+        ))
     }
+    return(list(
+      significance = significance,
+      summary = mbG,
+      graph = val$graph,
+      betweenness = val$betweenness,
+      network = vn,
+      communities = val$communities
+    ))
   }

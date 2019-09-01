@@ -1,7 +1,7 @@
 R/
 .Rhistory
 .Rproj.user
-docs/amin_words.odt
-docs/amin_suggestion.odt
-docs/YaHS.pdf
+docs/*
+results/*
+Data/*
 .RData

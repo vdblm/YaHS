@@ -19,6 +19,7 @@ data preprocess (in order):
 5- larger pics for lasso with categorical vars
 6- code of all pics in the paper (VKL, lasso and population codes)
 7- generate all the pics again. delete mi table and causal graphs and pairwise figs
+8- add pairwise figs for vkl (categorical)!
 
 * are values in vkl scaled?
 
